@@ -275,7 +275,7 @@ QPushButton:hover {
     </attribute>
    </widget>
   </widget>
-  <widget class="QPushButton" name="pushButton_3">
+  <widget class="QPushButton" name="finishButton">
    <property name="geometry">
     <rect>
      <x>1090</x>
@@ -293,7 +293,7 @@ QPushButton:hover {
     <string>Terminar</string>
    </property>
   </widget>
-  <widget class="QPushButton" name="pushButton_2">
+  <widget class="QPushButton" name="startButton">
    <property name="geometry">
     <rect>
      <x>60</x>
@@ -334,7 +334,7 @@ QPushButton:hover {
     <set>Qt::AlignCenter</set>
    </property>
   </widget>
-  <widget class="QLabel" name="imageLabel_2">
+  <widget class="QLabel" name="targetImageLabel">
    <property name="geometry">
     <rect>
      <x>280</x>
@@ -356,7 +356,7 @@ QPushButton:hover {
     <set>Qt::AlignCenter</set>
    </property>
   </widget>
-  <widget class="QPushButton" name="pushButton">
+  <widget class="QPushButton" name="uploadImageButton">
    <property name="geometry">
     <rect>
      <x>60</x>

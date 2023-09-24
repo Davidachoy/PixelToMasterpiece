@@ -9,6 +9,7 @@ Original file is located at
 
 import random
 from PIL import Image,ImageDraw
+from concurrent.futures import ProcessPoolExecutor
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -40,7 +41,7 @@ def generar_poblacion_secuencial(tam_poblacion, num_puntos, ancho_imagen, alto_i
                 color = color_aleatorio()
                 individuo.append((punto, color))
         poblacion.append(individuo)
-
+    
     return poblacion
 
 def color_aleatorio():
@@ -139,7 +140,7 @@ def algoritmo_genetico(imagen_objetivo_path, tam_poblacion, num_puntos, num_gene
             mejor_fitness = fitness_actual
             mejor_individuo = individuo_actual
 
-        if generacion % 5000 == 0:  # Muestra la imagen cada 5 generaciones
+        if generacion % 200 == 0:  # Muestra la imagen cada 5 generaciones
             resultado_temp = individuo_a_imagen(individuo_actual, ancho_imagen, alto_imagen)
             plt.imshow(resultado_temp)
             plt.title(f"Generación {generacion + 1}")
@@ -152,5 +153,5 @@ def algoritmo_genetico(imagen_objetivo_path, tam_poblacion, num_puntos, num_gene
     return individuo_a_imagen(mejor_individuo, ancho_imagen, alto_imagen)
 
 # Ejemplo de uso:
-resultado = algoritmo_genetico("OIP.jpg", 125, 1000, 20000, 0.1, 3)
+resultado = algoritmo_genetico("OIP.jpg", 100, 1000, 2000, 0.1, 3)
 resultado.save("imagen_resultante.jpg")
