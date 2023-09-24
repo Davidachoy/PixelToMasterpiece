@@ -1,33 +1,46 @@
-#pyqt6 call .ui file
-
 import sys
 from PyQt6.QtWidgets import QApplication, QWidget, QFileDialog
-from PyQt6.QtCore import QFile,QThread, pyqtSignal
+from PyQt6.QtCore import QFile, QThread, pyqtSignal
 from PyQt6.QtGui import QPixmap, QImage
 from PyQt6 import uic
-from algoritmoGenetico import algoritmoGenetico
+from algoritmoGenetico import algoritmo_genetico
 import cv2
-import matplotlib.pyplot as plt
 import numpy as np
+
+
 class GeneticAlgorithmThread(QThread):
     update_signal = pyqtSignal(np.ndarray)
 
-    def run(self):
-        def update_callback(image):
-            self.update_signal.emit(image)
+    def __init__(self, population_size):
+        super().__init__()
+        self.population_size = population_size
 
-        algoritmoGenetico(update_callback=update_callback)
+    def run(self):
+        algoritmo_genetico("OIP.jpg", self.population_size, 1000, 20000, 0.1, 3, update_callback=self.updateImageSignal)
+
+    def updateImageSignal(self, image):
+        self.update_signal.emit(image)
+
 
 class MainWindow(QWidget):
     def __init__(self):
         super().__init__()
         uic.loadUi('ui/main_window.ui', self)
+        
+        # Suponiendo que el slider se llama 'populationSlider' en tu archivo .ui
+        self.populationSlider = self.horizontalSlider_2  
+        self.populationSlider.valueChanged.connect(self.sliderValueChanged)
+        self.label_5.setText(str(self.populationSlider.value()))
+
+
+
         self.startButton.clicked.connect(self.startButtonClicked)
         self.uploadImageButton.clicked.connect(self.uploadImageButtonClicked)
         self.finishButton.clicked.connect(self.finishButtonClicked)
 
-        self.genetic_thread = GeneticAlgorithmThread()
+        self.genetic_thread = GeneticAlgorithmThread(self.populationSlider.value())
         self.genetic_thread.update_signal.connect(self.updateImage)
+
     def uploadImageButtonClicked(self):
         imagePath, _ = QFileDialog.getOpenFileName(self, "Open Image", "", "Image Files (*.png *.jpg *.jpeg *.bmp)")
         print(imagePath)
@@ -42,16 +55,23 @@ class MainWindow(QWidget):
         pixmap = QPixmap.fromImage(qImg)
         self.imageLabel.setPixmap(pixmap)
         self.imageLabel.setScaledContents(True)
-                    
 
     def startButtonClicked(self):
         if not self.genetic_thread.isRunning():
             self.genetic_thread.start()
-    
+
     def finishButtonClicked(self):
         print('Finish Button Clicked')
 
+    def sliderValueChanged(self):
+        value = self.populationSlider.value()
+        # Si quieres realizar acciones adicionales al mover el slider, hazlo aquí. 
+        # Por ejemplo, mostrar el valor en un QLabel.
+        self.label_5.setText(str(value))
 
+        print(f"Population Size set to: {value}")
+        # Actualizar el tamaño de la población en el hilo antes de empezarlo
+        self.genetic_thread.population_size = value
 
 
 if __name__ == '__main__':
@@ -62,4 +82,3 @@ if __name__ == '__main__':
         sys.exit(app.exec())
     except SystemExit:
         print('Closing Window...')
-# En main.py

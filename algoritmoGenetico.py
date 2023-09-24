@@ -105,7 +105,7 @@ def mutar(individuo, probabilidad_mutacion):
             individuo[indice] = (individuo[indice][0], nuevo_color)
 
 # Nuestro algoritmo genético:
-def algoritmo_genetico(imagen_objetivo_path, tam_poblacion, num_puntos, num_generaciones, probabilidad_mutacion, tam_torneo):
+def algoritmo_genetico(imagen_objetivo_path, tam_poblacion, num_puntos, num_generaciones, probabilidad_mutacion, tam_torneo,update_callback=None):
     imagen_objetivo = Image.open(imagen_objetivo_path)
     ancho_imagen, alto_imagen = imagen_objetivo.size
 
@@ -139,18 +139,13 @@ def algoritmo_genetico(imagen_objetivo_path, tam_poblacion, num_puntos, num_gene
             mejor_fitness = fitness_actual
             mejor_individuo = individuo_actual
 
-        if generacion % 5000 == 0:  # Muestra la imagen cada 5 generaciones
-            resultado_temp = individuo_a_imagen(individuo_actual, ancho_imagen, alto_imagen)
-            plt.imshow(resultado_temp)
-            plt.title(f"Generación {generacion + 1}")
-            plt.pause(1)  # Pausa por 1 segundo. Puedes ajustar esto según tus necesidades.
+        if generacion % 5 == 0: # o el intervalo que desees
+            resultado_temp_np = np.array(individuo_a_imagen(individuo_actual, ancho_imagen, alto_imagen))
+            if update_callback:
+                update_callback(resultado_temp_np)
 
 
 
         print(f"Generación {generacion + 1}/{num_generaciones}, Mejor Fitness: {mejor_fitness}")
 
     return individuo_a_imagen(mejor_individuo, ancho_imagen, alto_imagen)
-
-# Ejemplo de uso:
-resultado = algoritmo_genetico("OIP.jpg", 125, 1000, 20000, 0.1, 3)
-resultado.save("imagen_resultante.jpg")
