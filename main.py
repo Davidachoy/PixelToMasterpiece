@@ -11,12 +11,14 @@ import numpy as np
 class GeneticAlgorithmThread(QThread):
     update_signal = pyqtSignal(np.ndarray)
 
-    def __init__(self, population_size):
+    def __init__(self, population_size,image_path):
         super().__init__()
         self.population_size = population_size
+        self.image_path = image_path
+
 
     def run(self):
-        algoritmo_genetico("OIP.jpg", self.population_size, 1000, 20000, 0.1, 3, update_callback=self.updateImageSignal)
+        algoritmo_genetico(self.image_path, self.population_size, 1000, 20000, 0.1, 3, update_callback=self.updateImageSignal)
 
     def updateImageSignal(self, image):
         self.update_signal.emit(image)
@@ -31,6 +33,7 @@ class MainWindow(QWidget):
         self.populationSlider = self.horizontalSlider_2  
         self.populationSlider.valueChanged.connect(self.sliderValueChanged)
         self.label_5.setText(str(self.populationSlider.value()))
+        self.image_path = ""  # O la ruta de una imagen por defecto
 
 
 
@@ -38,15 +41,15 @@ class MainWindow(QWidget):
         self.uploadImageButton.clicked.connect(self.uploadImageButtonClicked)
         self.finishButton.clicked.connect(self.finishButtonClicked)
 
-        self.genetic_thread = GeneticAlgorithmThread(self.populationSlider.value())
+        self.genetic_thread = GeneticAlgorithmThread(self.populationSlider.value(), self.image_path)
         self.genetic_thread.update_signal.connect(self.updateImage)
 
     def uploadImageButtonClicked(self):
         imagePath, _ = QFileDialog.getOpenFileName(self, "Open Image", "", "Image Files (*.png *.jpg *.jpeg *.bmp)")
-        print(imagePath)
         if imagePath:
             self.targetImageLabel.setPixmap(QPixmap(imagePath))
             self.targetImageLabel.setScaledContents(True)
+            self.image_path = imagePath  # Guardar la ruta de la imagen
 
     def updateImage(self, image):
         height, width, channel = image.shape
@@ -58,6 +61,9 @@ class MainWindow(QWidget):
 
     def startButtonClicked(self):
         if not self.genetic_thread.isRunning():
+            population_size = self.populationSlider.value()
+            self.genetic_thread = GeneticAlgorithmThread(population_size, self.image_path)
+            self.genetic_thread.update_signal.connect(self.updateImage)
             self.genetic_thread.start()
 
     def finishButtonClicked(self):
