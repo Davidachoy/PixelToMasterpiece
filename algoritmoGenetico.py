@@ -158,9 +158,8 @@ def algoritmo_genetico( imagen_objetivo_path, tam_poblacion, num_puntos,
 
 ## Funciones de ayuda externas del AG
 def plot():
-    # Después de que termine el algoritmo genético, generamos el gráfico
+    # Agarramos los valores de fitness maximo, y promedio para mostrarlos en pantalla
     generaciones = range(len(fitness_maximo_por_generacion))
-
     plt.figure(figsize=(10, 5))
     plt.plot(generaciones, fitness_maximo_por_generacion, label='Fitness Máximo')
     plt.plot(generaciones, fitness_promedio_por_generacion, label='Fitness Promedio')
@@ -195,7 +194,7 @@ def generarGif():
         # Guardar el GIF
         imageio.mimsave(ruta_salida_gif, imagenes, duration=0.000001)  # Puedes ajustar la duración entre frames según tu preferencia
 
-
+#Limpiamos la carpeta donde se guardan las imagenes donde generamos los gif
 def borrar_contenido_carpeta(ruta_carpeta):
     try:
         for elemento in os.listdir(ruta_carpeta):

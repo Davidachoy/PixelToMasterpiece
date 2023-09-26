@@ -113,7 +113,10 @@ class MainWindow(QWidget): #  Clase para la ventana principal
 
     def finishButtonClicked(self):
         print('Finish Button Clicked')
-
+        # Detener el hilo si está corriendo
+        if self.genetic_thread.isRunning():
+            self.genetic_thread.terminate()  # Detener el hilo
+        app.quit()
     def sliderValueChanged(self): # Función para manejar el cambio de valor en el slider de tamaño de la población
         value = self.populationSlider.value() # Valor del slider
         self.label_5.setText(str(value)) # Mostrar el valor del slider en un QLabel
