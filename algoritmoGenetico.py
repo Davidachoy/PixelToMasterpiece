@@ -2,9 +2,16 @@ import random
 from PIL import Image,ImageDraw
 import numpy as np
 import matplotlib.pyplot as plt
+import os
+import shutil
+import imageio
+import re
+# Lista para almacenar el fitness máximo por generación
+fitness_maximo_por_generacion = []
+# Lista para almacenar el fitness promedio por generación
+fitness_promedio_por_generacion = []
 
 # Funciones auxiliares:
-
 def generar_punto_fijo(ancho_imagen, alto_imagen): # función auxiliar para generar un punto aleatorio
     x = random.randint(0, ancho_imagen - 1) 
     y = random.randint(0, alto_imagen - 1)
@@ -95,12 +102,15 @@ def algoritmo_genetico( imagen_objetivo_path, tam_poblacion, num_puntos,
 
     poblacion  = generar_poblacion_secuencial(tam_poblacion, num_puntos, ancho_imagen, alto_imagen) # genera una población inicial
 
-
     mejor_individuo = min(poblacion, key=lambda ind: fitness(ind, imagen_objetivo)) # encuentra el individuo con menor fitness
     mejor_fitness = fitness(mejor_individuo, imagen_objetivo) # calcula el fitness del mejor individuo
     generacion = 0  # Introduce una variable para contar las generaciones
-
-
+    
+    #Datos para las graficas
+    fitness_maximo_por_generacion.append(mejor_fitness)
+    fitness_total = sum(fitness(ind, imagen_objetivo) for ind in poblacion)
+    fitness_promedio = fitness_total / len(poblacion)
+    fitness_promedio_por_generacion.append(fitness_promedio)
 
     #infinito loop
     while True:
@@ -126,18 +136,77 @@ def algoritmo_genetico( imagen_objetivo_path, tam_poblacion, num_puntos,
         if fitness_actual < mejor_fitness: # si el fitness del mejor individuo es menor que el fitness del mejor individuo hasta ahora
             mejor_fitness = fitness_actual # actualiza el fitness del mejor individuo
             mejor_individuo = individuo_actual # actualiza el mejor individuo
-
-
+        
+        #Datos para las graficas
+        fitness_maximo_por_generacion.append(mejor_fitness)
+        fitness_total = sum(fitness(ind, imagen_objetivo) for ind in poblacion)
+        fitness_promedio = fitness_total / len(poblacion)
+        fitness_promedio_por_generacion.append(fitness_promedio)
 
         if generacion % 5 == 0:  # cada 5 generaciones
-            resultado_temp_np = np.array(individuo_a_imagen(individuo_actual, ancho_imagen, alto_imagen)) # convierte el individuo en una imagen
+            img=individuo_a_imagen(individuo_actual, ancho_imagen, alto_imagen)
+            resultado_temp_np = np.array(img) # convierte el individuo en una imagen
+            nombre_archivo = f"img_{generacion}.png"
+            ruta_guardado = f"ImagenesGif/{nombre_archivo}"
+            img.save(ruta_guardado)
             if update_callback: # si se ha pasado una función de callback
                 update_callback(resultado_temp_np) # llama a la función de callback
-
         if generation_callback: 
             generation_callback(generacion, mejor_fitness) # llama a la función de callback
 
         generacion += 1  # Incrementa la cuenta de generaciones
 
+## Funciones de ayuda externas del AG
+def plot():
+    # Después de que termine el algoritmo genético, generamos el gráfico
+    generaciones = range(len(fitness_maximo_por_generacion))
+
+    plt.figure(figsize=(10, 5))
+    plt.plot(generaciones, fitness_maximo_por_generacion, label='Fitness Máximo')
+    plt.plot(generaciones, fitness_promedio_por_generacion, label='Fitness Promedio')
+    plt.xlabel('Generación')
+    plt.ylabel('Fitness')
+    plt.legend()
+    plt.title('Evolución del Fitness por Generaciones')
+    plt.grid(True)
+    plt.show()
+def generarGif():
+        # Carpeta que contiene las imágenes
+        ruta_carpeta = "ImagenesGif"
+        # Obtener la lista de archivos de imagen en la carpeta
+        archivos_imagen = [archivo for archivo in os.listdir(ruta_carpeta) if archivo.endswith(('.png', '.jpg', '.jpeg', '.gif'))]
+
+        # Función para extraer el número de demarcación de un nombre de archivo
+        def extract_demarcation_number(filename):
+            match = re.search(r'img_(\d+)', filename)
+            if match:
+                return int(match.group(1))
+            return 0
+
+        # Ordenar la lista de archivos de imagen en función de la demarcación
+        archivos_imagen.sort(key=extract_demarcation_number)
+
+        # Crear una lista de imágenes a partir de los archivos ordenados
+        imagenes = [imageio.imread(os.path.join(ruta_carpeta, archivo)) for archivo in archivos_imagen]
+
+        # Ruta de salida del archivo GIF
+        ruta_salida_gif = "Gif/Ejemplo.gif"
+
+        # Guardar el GIF
+        imageio.mimsave(ruta_salida_gif, imagenes, duration=0.000001)  # Puedes ajustar la duración entre frames según tu preferencia
 
 
+def borrar_contenido_carpeta(ruta_carpeta):
+    try:
+        for elemento in os.listdir(ruta_carpeta):
+            ruta_elemento = os.path.join(ruta_carpeta, elemento)
+            if os.path.isfile(ruta_elemento):
+                os.unlink(ruta_elemento)  # Borrar archivo
+            elif os.path.isdir(ruta_elemento):
+                shutil.rmtree(ruta_elemento)  # Borrar carpeta y su contenido
+        print(f"Contenido de la carpeta {ruta_carpeta} borrado exitosamente.")
+    except Exception as e:
+        print(f"Error al borrar contenido de la carpeta {ruta_carpeta}: {str(e)}")
+
+#algoritmo_genetico("imagen_puntillismo.jpg", 80, 950,20000, 0.01, 5)
+#algoritmo_genetico("OIP.jpg",80,950,200000,0.01,5)
